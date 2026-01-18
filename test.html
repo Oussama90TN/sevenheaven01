@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Heaven - Pre-Deployment Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .test-item {
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #ddd;
+            background: #f9f9f9;
+        }
+        .test-item.pass {
+            border-left-color: #22c55e;
+        }
+        .test-item.fail {
+            border-left-color: #ef4444;
+        }
+        button {
+            background: #C4A39A;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #B39189;
+        }
+        h1 {
+            color: #C4A39A;
+        }
+        .logo-test {
+            max-width: 200px;
+            margin: 20px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Seven Heaven - Pre-Deployment Test</h1>
+    
+    <div class="test-box">
+        <h2>Test Your Files Before Deployment</h2>
+        <p>This page checks if all files are ready to deploy to sevenheavenqa.com</p>
+        <button onclick="runTests()">Run Tests</button>
+        <button onclick="window.location.href='index.html'">Open Main App</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="test-box">
+        <h3>📋 Pre-Deployment Checklist</h3>
+        <div id="checklist">
+            <label><input type="checkbox"> I have cPanel or FTP access</label><br>
+            <label><input type="checkbox"> I know my hosting login credentials</label><br>
+            <label><input type="checkbox"> All tests above passed</label><br>
+            <label><input type="checkbox"> I have backed up current website files</label><br>
+            <label><input type="checkbox"> I'm ready to upload to sevenheavenqa.com</label><br>
+        </div>
+    </div>
+
+    <script>
+        function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-box"><h3>Test Results:</h3>';
+            
+            let allPassed = true;
+
+            // Test 1: Check if index.html exists
+            fetch('index.html')
+                .then(response => {
+                    if (response.ok) {
+                        addTest('index.html found', true);
+                    } else {
+                        addTest('index.html NOT found', false);
+                        allPassed = false;
+                    }
+                })
+                .catch(() => {
+                    addTest('index.html NOT found', false);
+                    allPassed = false;
+                });
+
+            // Test 2: Check if app.js exists
+            fetch('app.js')
+                .then(response => {
+                    if (response.ok) {
+                        addTest('app.js found', true);
+                    } else {
+                        addTest('app.js NOT found', false);
+                        allPassed = false;
+                    }
+                })
+                .catch(() => {
+                    addTest('app.js NOT found', false);
+                    allPassed = false;
+                });
+
+            // Test 3: Check if logo.png exists
+            const img = new Image();
+            img.onload = function() {
+                addTest('logo.png found and valid', true);
+                document.getElementById('logoTest').innerHTML = '<img src="logo.png" class="logo-test">';
+            };
+            img.onerror = function() {
+                addTest('logo.png NOT found or invalid', false);
+                allPassed = false;
+            };
+            img.src = 'logo.png';
+
+            // Test 4: Check localStorage support
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addTest('Browser supports localStorage', true);
+            } catch(e) {
+                addTest('Browser does NOT support localStorage', false);
+                allPassed = false;
+            }
+
+            // Test 5: Check if files are in same directory
+            if (window.location.protocol === 'file:') {
+                addTest('Running from local file system (OK for testing)', true);
+            } else {
+                addTest('Running from web server', true);
+            }
+
+            setTimeout(() => {
+                resultsDiv.innerHTML += '<div id="logoTest"></div>';
+                
+                if (allPassed) {
+                    resultsDiv.innerHTML += '<div class="test-item pass"><strong class="success">✅ ALL TESTS PASSED!</strong><br>Your files are ready to deploy to sevenheavenqa.com</div>';
+                } else {
+                    resultsDiv.innerHTML += '<div class="test-item fail"><strong class="error">❌ SOME TESTS FAILED</strong><br>Please fix the issues above before deploying</div>';
+                }
+                
+                resultsDiv.innerHTML += '</div>';
+            }, 1000);
+        }
+
+        function addTest(message, passed) {
+            const resultsDiv = document.getElementById('results');
+            const className = passed ? 'pass' : 'fail';
+            const icon = passed ? '✅' : '❌';
+            const resultDiv = document.querySelector('.test-box:last-child') || resultsDiv;
+            
+            const testItem = document.createElement('div');
+            testItem.className = `test-item ${className}`;
+            testItem.innerHTML = `${icon} ${message}`;
+            
+            if (resultsDiv.querySelector('.test-box')) {
+                resultsDiv.querySelector('.test-box').appendChild(testItem);
+            } else {
+                resultsDiv.innerHTML += `<div class="test-box">${testItem.outerHTML}</div>`;
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', function() {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

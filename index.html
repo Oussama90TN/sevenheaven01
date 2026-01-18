@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Heaven Spa - Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden { display: none !important; }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 50;
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @media print {
+            .no-print { display: none; }
+        }
+        
+        /* Seven Heaven Brand Colors */
+        .brand-primary {
+            color: #C4A39A !important;
+        }
+        .bg-brand-primary {
+            background-color: #C4A39A !important;
+        }
+        .border-brand-primary {
+            border-color: #C4A39A !important;
+        }
+        .hover\:bg-brand-primary-dark:hover {
+            background-color: #B39189 !important;
+        }
+        
+        /* Replace rose-400 with brand color */
+        .text-rose-400, .hover\:text-rose-400:hover {
+            color: #C4A39A !important;
+        }
+        .bg-rose-400, .hover\:bg-rose-400:hover {
+            background-color: #C4A39A !important;
+        }
+        .border-rose-400, .hover\:border-rose-400:hover {
+            border-color: #C4A39A !important;
+        }
+        .hover\:bg-rose-500:hover {
+            background-color: #B39189 !important;
+        }
+        .focus\:ring-rose-400:focus {
+            --tw-ring-color: #C4A39A !important;
+        }
+        .text-rose-200 {
+            color: #E5D4CF !important;
+        }
+
+        /* Image preview styles */
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .image-preview-large {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <div class="text-center mb-8">
+                <img src="logo.png" alt="Seven Heaven Spa" class="mx-auto mb-4" style="max-width: 300px; height: auto;">
+                <p class="text-gray-600 mt-2">Mobile Spa Management</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="loginUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-transparent" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-transparent" required>
+                </div>
+                <button type="submit" class="w-full bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                    Login
+                </button>
+                <div class="text-xs text-gray-500 mt-4 p-3 bg-gray-50 rounded">
+                    <p class="font-semibold mb-2">Demo Credentials:</p>
+                    <p>Admin: <span class="font-mono">admin / admin123</span></p>
+                    <p>Staff: <span class="font-mono">sara / staff123</span></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-40 no-print">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="Seven Heaven" style="height: 50px; width: auto;">
+                    <div>
+                        <p class="text-sm text-gray-600" id="userRole">Welcome, <span id="currentUser"></span></p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="text-gray-600 hover:text-rose-400">
+                    <i class="fas fa-sign-out-alt text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b sticky top-[73px] z-30 no-print">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex overflow-x-auto">
+                    <button onclick="showTab('dashboard')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </button>
+                    <button onclick="showTab('bookings')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap">
+                        <i class="fas fa-calendar-alt mr-2"></i>Bookings
+                    </button>
+                    <button onclick="showTab('schedule')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap">
+                        <i class="fas fa-clock mr-2"></i>My Schedule
+                    </button>
+                    <button onclick="showTab('transportation')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap staff-only">
+                        <i class="fas fa-car mr-2"></i>Transportation
+                    </button>
+                    <button onclick="showTab('services')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-spa mr-2"></i>Services
+                    </button>
+                    <button onclick="showTab('staff')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-users mr-2"></i>Staff
+                    </button>
+                    <button onclick="showTab('expenses')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-receipt mr-2"></i>Expenses
+                    </button>
+                    <button onclick="showTab('salaries')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-money-bill-wave mr-2"></i>Salaries
+                    </button>
+                    <button onclick="showTab('transportationReports')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-car mr-2"></i>Transportation
+                    </button>
+                    <button onclick="showTab('reports')" class="nav-tab px-6 py-3 font-medium border-b-2 border-transparent hover:border-rose-400 whitespace-nowrap admin-only">
+                        <i class="fas fa-chart-bar mr-2"></i>Reports
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 py-6">
+            
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Today's Bookings</p>
+                                <p class="text-3xl font-bold text-rose-400" id="todayBookings">0</p>
+                            </div>
+                            <i class="fas fa-calendar-check text-4xl text-rose-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Today's Revenue</p>
+                                <p class="text-3xl font-bold text-rose-400" id="todayRevenue">0</p>
+                            </div>
+                            <i class="fas fa-money-bill-wave text-4xl text-rose-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Active Staff</p>
+                                <p class="text-3xl font-bold text-rose-400" id="activeStaff">0</p>
+                            </div>
+                            <i class="fas fa-users text-4xl text-rose-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">Pending Payments</p>
+                                <p class="text-3xl font-bold text-rose-400" id="pendingPayments">0</p>
+                            </div>
+                            <i class="fas fa-exclamation-circle text-4xl text-rose-200"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Today's Schedule</h3>
+                        <div id="todaySchedule" class="space-y-3">
+                            <!-- Schedule items will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6 admin-only">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="showTab('bookings'); openBookingModal();" class="p-4 bg-rose-50 rounded-lg hover:bg-rose-100 transition text-center">
+                                <i class="fas fa-plus-circle text-2xl text-rose-400 mb-2"></i>
+                                <p class="text-sm font-medium">New Booking</p>
+                            </button>
+                            <button onclick="openGiftModal()" class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition text-center">
+                                <i class="fas fa-gift text-2xl text-green-500 mb-2"></i>
+                                <p class="text-sm font-medium">Add Gift</p>
+                            </button>
+                            <button onclick="showTab('expenses')" class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition text-center">
+                                <i class="fas fa-receipt text-2xl text-blue-500 mb-2"></i>
+                                <p class="text-sm font-medium">Add Expense</p>
+                            </button>
+                            <button onclick="showTab('reports')" class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition text-center">
+                                <i class="fas fa-chart-line text-2xl text-purple-500 mb-2"></i>
+                                <p class="text-sm font-medium">View Reports</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Tab -->
+            <div id="bookingsTab" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Bookings Management</h2>
+                        <button onclick="openBookingModal()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition admin-only">
+                            <i class="fas fa-plus mr-2"></i>New Booking
+                        </button>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="filterDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="loadBookings()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                            <select id="filterArea" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="loadBookings()">
+                                <option value="">All Areas</option>
+                                <option value="West Bay">West Bay</option>
+                                <option value="The Pearl">The Pearl</option>
+                                <option value="Al Sadd">Al Sadd</option>
+                                <option value="Lusail">Lusail</option>
+                                <option value="Al Wakrah">Al Wakrah</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Staff</label>
+                            <select id="filterStaff" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="loadBookings()">
+                                <option value="">All Staff</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                            <select id="filterPayment" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="loadBookings()">
+                                <option value="">All</option>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="bookingsList" class="space-y-4">
+                        <!-- Bookings will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Schedule Tab (for staff) -->
+            <div id="scheduleTab" class="tab-content hidden">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">My Schedule</h2>
+                    <div id="staffSchedule" class="space-y-4">
+                        <!-- Staff schedule will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transportation Tab (for staff) -->
+            <div id="transportationTab" class="tab-content hidden staff-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Transportation Log</h2>
+                        <button onclick="openTransportationModal()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                            <i class="fas fa-plus mr-2"></i>Add Transportation
+                        </button>
+                    </div>
+                    <div id="transportationList" class="space-y-4">
+                        <!-- Transportation logs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Tab (admin only) -->
+            <div id="servicesTab" class="tab-content hidden admin-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Service Categories</h2>
+                    <div id="servicesList" class="space-y-6">
+                        <!-- Services will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Tab (admin only) -->
+            <div id="staffTab" class="tab-content hidden admin-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Staff Management</h2>
+                        <button onclick="openStaffModal()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                            <i class="fas fa-plus mr-2"></i>Add Staff
+                        </button>
+                    </div>
+                    <div id="staffList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Staff cards will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expenses Tab (admin only) -->
+            <div id="expensesTab" class="tab-content hidden admin-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Expense Management</h2>
+                    </div>
+                    
+                    <!-- Expense Type Tabs -->
+                    <div class="border-b mb-6">
+                        <div class="flex gap-4">
+                            <button onclick="showExpenseType('consumables')" class="expense-type-tab px-4 py-2 font-medium border-b-2 border-rose-400">
+                                Consumables
+                            </button>
+                            <button onclick="showExpenseType('assets')" class="expense-type-tab px-4 py-2 font-medium border-b-2 border-transparent hover:border-rose-400">
+                                Assets
+                            </button>
+                            <button onclick="showExpenseType('admin')" class="expense-type-tab px-4 py-2 font-medium border-b-2 border-transparent hover:border-rose-400">
+                                Admin
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expense Form -->
+                    <div class="mb-6">
+                        <button onclick="toggleExpenseForm()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                            <i class="fas fa-plus mr-2"></i>Add Expense
+                        </button>
+                        
+                        <div id="expenseFormContainer" class="hidden mt-4 p-4 bg-gray-50 rounded-lg">
+                            <form id="expenseForm" class="space-y-4">
+                                <input type="hidden" id="expenseType" value="consumables">
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+                                        <input type="text" id="expenseCompany" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                                        <input type="date" id="expenseDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3 bg-white p-4 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="font-semibold text-gray-800">Products *</h4>
+                                        <button type="button" onclick="addExpenseProduct()" class="text-sm text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-plus mr-1"></i>Add Product
+                                        </button>
+                                    </div>
+                                    <div id="expenseProductsContainer">
+                                        <div class="expense-product-item flex gap-2 mb-2">
+                                            <input type="text" class="product-name flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Product name *" required>
+                                            <input type="number" class="product-price w-32 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Price *" step="0.01" min="0" required onchange="calculateExpenseTotal()">
+                                            <button type="button" onclick="removeExpenseProduct(this)" class="text-red-500 hover:text-red-700">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="border-t pt-3 flex justify-between items-center">
+                                        <span class="font-semibold text-gray-800">Total:</span>
+                                        <span class="text-2xl font-bold text-rose-400" id="expenseTotal">0 QAR</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
+                                    <select id="expensePayment" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                        <option value="cash">Cash</option>
+                                        <option value="card">Card</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                        <option value="fawran">Fawran</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                    <textarea id="expenseNote" class="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="2"></textarea>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <button type="submit" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                                        Save Expense
+                                    </button>
+                                    <button type="button" onclick="toggleExpenseForm()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Expense Lists -->
+                    <div id="consumablesExpenses" class="expense-list">
+                        <!-- Consumables expenses will be loaded here -->
+                    </div>
+                    <div id="assetsExpenses" class="expense-list hidden">
+                        <!-- Assets expenses will be loaded here -->
+                    </div>
+                    <div id="adminExpenses" class="expense-list hidden">
+                        <!-- Admin expenses will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salaries Tab (admin only) -->
+            <div id="salariesTab" class="tab-content hidden admin-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Salary Management</h2>
+                        <button onclick="openSalaryModal()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                            <i class="fas fa-plus mr-2"></i>Process Salary
+                        </button>
+                    </div>
+                    
+                    <div id="salariesList" class="space-y-4">
+                        <!-- Salaries will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transportation Reports Tab (admin only) -->
+            <div id="transportationReportsTab" class="tab-content hidden admin-only">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Transportation Reports</h2>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Today's Trips</p>
+                            <p class="text-2xl font-bold text-blue-600" id="transportTodayTrips">0</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">This Week</p>
+                            <p class="text-2xl font-bold text-green-600" id="transportWeekTrips">0</p>
+                        </div>
+                        <div class="p-4 bg-purple-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">This Month</p>
+                            <p class="text-2xl font-bold text-purple-600" id="transportMonthTrips">0</p>
+                        </div>
+                        <div class="p-4 bg-rose-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Total Amount</p>
+                            <p class="text-2xl font-bold text-rose-600" id="transportTotalAmount">0 QAR</p>
+                        </div>
+                        <div class="p-4 bg-orange-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Total Tips</p>
+                            <p class="text-2xl font-bold text-orange-600" id="transportTotalTips">0 QAR</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <div class="border-b mb-6 pb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Period</label>
+                                <select id="transportPeriodFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="filterTransportationReports()">
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="all">All Time</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Staff Member</label>
+                                <select id="transportStaffFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="filterTransportationReports()">
+                                    <option value="">All Staff</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                                <select id="transportSortFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="filterTransportationReports()">
+                                    <option value="date_desc">Date (Newest First)</option>
+                                    <option value="date_asc">Date (Oldest First)</option>
+                                    <option value="trips_desc">Most Trips First</option>
+                                    <option value="amount_desc">Highest Amount First</option>
+                                    <option value="tips_desc">Highest Tips First</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transportation List -->
+                    <div id="transportationReportsList" class="space-y-4">
+                        <!-- Transportation reports will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab (admin only) -->
+            <div id="reportsTab" class="tab-content hidden admin-only">
+                <div class="space-y-6">
+                    <!-- Revenue Reports -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Revenue Reports</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Today's Revenue</p>
+                                <p class="text-2xl font-bold text-blue-600" id="reportDailyRevenue">0 QAR</p>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">This Week's Revenue</p>
+                                <p class="text-2xl font-bold text-green-600" id="reportWeeklyRevenue">0 QAR</p>
+                            </div>
+                            <div class="p-4 bg-purple-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">This Month's Revenue</p>
+                                <p class="text-2xl font-bold text-purple-600" id="reportMonthlyRevenue">0 QAR</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Custom Date Range</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input type="date" id="revenueStartDate" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <input type="date" id="revenueEndDate" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <button onclick="generateRevenueReport()" class="bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition">
+                                    Generate Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="revenueReportDetails" class="mt-4">
+                            <!-- Detailed revenue report will be shown here -->
+                        </div>
+                    </div>
+
+                    <!-- Staff Reports -->
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Staff Performance Reports</h2>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Staff Member</label>
+                            <select id="staffReportSelect" class="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="">All Staff</option>
+                            </select>
+                        </div>
+
+                        <div class="border-b mb-4">
+                            <div class="flex gap-4">
+                                <button onclick="showStaffReportPeriod('daily')" class="staff-report-tab px-4 py-2 font-medium border-b-2 border-rose-400">
+                                    Daily
+                                </button>
+                                <button onclick="showStaffReportPeriod('weekly')" class="staff-report-tab px-4 py-2 font-medium border-b-2 border-transparent hover:border-rose-400">
+                                    Weekly
+                                </button>
+                                <button onclick="showStaffReportPeriod('monthly')" class="staff-report-tab px-4 py-2 font-medium border-b-2 border-transparent hover:border-rose-400">
+                                    Monthly
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="dailyStaffReport" class="staff-report-content">
+                            <!-- Daily staff report will be shown here -->
+                        </div>
+                        <div id="weeklyStaffReport" class="staff-report-content hidden">
+                            <!-- Weekly staff report will be shown here -->
+                        </div>
+                        <div id="monthlyStaffReport" class="staff-report-content hidden">
+                            <!-- Monthly staff report will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800" id="modalTitle">New Booking</h3>
+                        <button onclick="closeBookingModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <form id="bookingForm" class="space-y-4">
+                        <input type="hidden" id="bookingId">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                            <input type="text" id="customerName" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                                <input type="tel" id="customerPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Area *</label>
+                                <select id="customerArea" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                    <option value="">Select Area</option>
+                                    <option value="West Bay">West Bay</option>
+                                    <option value="The Pearl">The Pearl</option>
+                                    <option value="Al Sadd">Al Sadd</option>
+                                    <option value="Lusail">Lusail</option>
+                                    <option value="Al Wakrah">Al Wakrah</option>
+                                    <option value="Al Rayyan">Al Rayyan</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+                            <textarea id="customerAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="2" required></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Google Maps Location Link</label>
+                            <input type="url" id="locationLink" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="https://maps.google.com/...">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                                <input type="date" id="bookingDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Time *</label>
+                                <input type="time" id="bookingTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Service *</label>
+                            <select id="serviceSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required onchange="updateServiceDetails()">
+                                <option value="">Select Service</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                                <input type="text" id="serviceDuration" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Price (QAR) *</label>
+                                <input type="number" id="manualPrice" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Enter custom price" min="0" step="0.01" required>
+                                <p class="text-xs text-gray-500 mt-1">Enter the price you quoted to this customer</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Assign Staff * (Hold Ctrl/Cmd for multiple)</label>
+                            <select id="assignStaff" class="w-full px-4 py-2 border border-gray-300 rounded-lg" multiple size="4" required>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Multiple teams can go to different locations</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Uber Transit Time (minutes)</label>
+                            <input type="number" id="uberTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="20" min="0">
+                            <p class="text-xs text-gray-500 mt-1">Estimated Uber travel time to customer location</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Status *</label>
+                            <select id="paymentStatus" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required onchange="togglePaymentMethod()">
+                                <option value="unpaid">Unpaid</option>
+                                <option value="paid">Paid</option>
+                            </select>
+                        </div>
+
+                        <div id="paymentMethodDiv" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                            <select id="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="fawran">Fawran</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" id="isGift" class="w-4 h-4 text-rose-400 rounded" onchange="toggleGiftPrice()">
+                                <span class="text-sm font-medium text-gray-700">This is a Gift</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea id="bookingNotes" class="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="3"></textarea>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                                Save Booking
+                            </button>
+                            <button type="button" onclick="closeBookingModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift Modal -->
+    <div id="giftModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Add Gift Booking</h3>
+                        <button onclick="closeGiftModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Create a complimentary booking as a gift</p>
+                    <button onclick="closeGiftModal(); openBookingModal(); document.getElementById('isGift').checked = true;" class="w-full bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                        Create Gift Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Modal -->
+    <div id="staffModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Add Staff Member</h3>
+                        <button onclick="closeStaffModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <form id="staffForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                            <input type="text" id="staffName" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                            <input type="tel" id="staffPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                            <input type="text" id="staffSpecialization" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="e.g., Massage, Nails">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                            <input type="text" id="staffUsername" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                            <input type="password" id="staffPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="staffActive" class="w-4 h-4 text-rose-400 rounded" checked>
+                            <label class="ml-2 text-sm text-gray-700">Active</label>
+                        </div>
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                                Add Staff
+                            </button>
+                            <button type="button" onclick="closeStaffModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transportation Modal -->
+    <div id="transportationModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Add Transportation</h3>
+                        <button onclick="closeTransportationModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <form id="transportationForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                            <input type="date" id="transportDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Number of Trips *</label>
+                            <input type="number" id="transportTrips" class="w-full px-4 py-2 border border-gray-300 rounded-lg" min="1" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount of Trip (QAR) *</label>
+                            <input type="number" id="transportAmount" class="w-full px-4 py-2 border border-gray-300 rounded-lg" min="0" step="0.01" placeholder="Total trip cost" required>
+                            <p class="text-xs text-gray-500 mt-1">Total amount spent on transportation</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tips (QAR)</label>
+                            <input type="number" id="transportTips" class="w-full px-4 py-2 border border-gray-300 rounded-lg" min="0" step="0.01" value="0">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload Pictures</label>
+                            <input type="file" id="transportPictures" class="w-full px-4 py-2 border border-gray-300 rounded-lg" accept="image/*" multiple>
+                            <p class="text-xs text-gray-500 mt-1">You can upload multiple pictures</p>
+                        </div>
+
+                        <div id="transportPreview" class="grid grid-cols-3 gap-2">
+                            <!-- Image previews will appear here -->
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                                Save Transportation
+                            </button>
+                            <button type="button" onclick="closeTransportationModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salary Modal -->
+    <div id="salaryModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Process Salary</h3>
+                        <button onclick="closeSalaryModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <form id="salaryForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Staff Member *</label>
+                                <select id="salaryStaff" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                    <option value="">Select Staff</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Month *</label>
+                                <input type="month" id="salaryMonth" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-800">Additions (+)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Basic Salary</label>
+                                    <input type="number" id="salaryBasic" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Accommodation</label>
+                                    <input type="number" id="salaryAccommodation" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Transportation</label>
+                                    <input type="number" id="salaryTransportation" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Allowance</label>
+                                    <input type="number" id="salaryMobile" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Overtime</label>
+                                    <input type="number" id="salaryOvertime" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Incentive</label>
+                                    <input type="number" id="salaryIncentive" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="0.01" value="0" onchange="calculateTotal()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 bg-red-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800"><i class="fas fa-minus-circle mr-2 text-red-500"></i>Deductions (-)</h4>
+                                <button type="button" onclick="addDeduction()" class="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                                    <i class="fas fa-plus mr-1"></i>Add Deduction
+                                </button>
+                            </div>
+                            <div id="deductionsContainer">
+                                <div class="deduction-item bg-white p-3 rounded-lg mb-2 border border-red-200">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                                        <input type="text" class="deduction-label px-3 py-2 border border-gray-300 rounded-lg" placeholder="Reason (e.g., Late arrival, Damage)">
+                                        <input type="date" class="deduction-date px-3 py-2 border border-gray-300 rounded-lg">
+                                        <div class="flex gap-2">
+                                            <input type="number" class="deduction-amount flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Amount" step="0.01" value="0" min="0" onchange="calculateTotal()">
+                                            <button type="button" onclick="removeDeduction(this)" class="text-red-500 hover:text-red-700 px-2">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="deduction-note w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Additional notes (optional)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 bg-orange-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800"><i class="fas fa-hand-holding-usd mr-2 text-orange-500"></i>Advance Payments (-)</h4>
+                                <button type="button" onclick="addAdvance()" class="text-sm bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600">
+                                    <i class="fas fa-plus mr-1"></i>Add Advance
+                                </button>
+                            </div>
+                            <div id="advancesContainer">
+                                <div class="advance-item bg-white p-3 rounded-lg mb-2 border border-orange-200">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                                        <input type="text" class="advance-label px-3 py-2 border border-gray-300 rounded-lg" placeholder="Reason (e.g., Emergency, Medical)">
+                                        <input type="date" class="advance-date px-3 py-2 border border-gray-300 rounded-lg">
+                                        <div class="flex gap-2">
+                                            <input type="number" class="advance-amount flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Amount" step="0.01" value="0" min="0" onchange="calculateTotal()">
+                                            <button type="button" onclick="removeAdvance(this)" class="text-red-500 hover:text-red-700 px-2">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="advance-note w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Additional notes (optional)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold text-gray-800">Total Salary:</span>
+                                <span class="text-2xl font-bold text-blue-600" id="salaryTotal">0 QAR</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
+                            <select id="salaryPaymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                                <option value="transfer">Bank Transfer</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button type="submit" class="flex-1 bg-rose-400 text-white py-2 rounded-lg hover:bg-rose-500 transition">
+                                Process Salary
+                            </button>
+                            <button type="button" onclick="closeSalaryModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="bookingDetailsModal" class="hidden modal-overlay">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl modal-content">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Booking Details</h3>
+                        <button onclick="closeBookingDetailsModal()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div id="bookingDetailsContent">
+                        <!-- Details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" class="hidden modal-overlay" onclick="closeImagePreview()">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative">
+                <button onclick="closeImagePreview()" class="absolute top-2 right-2 bg-white text-gray-700 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img id="imagePreviewImg" src="" alt="Preview" class="image-preview-large rounded-lg">
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
